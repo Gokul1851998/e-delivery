@@ -44,16 +44,16 @@ const QuestionGrid: React.FC<QuestionGridProps> = ({
         if (selected) {
           switch (selected.type) {
             case 1:
-              colorClass = "bg-green-500 border-green-600 text-white";
+              colorClass = "bg-green-600 border-green-600 text-white";
               break;
             case 2:
               colorClass = "bg-red-500 border-red-600 text-white";
               break;
             case 3:
-              colorClass = "bg-purple-500 border-purple-600 text-white";
+              colorClass = "bg-[#800080] border-purple-600 text-white";
               break;
             case 4:
-              colorClass = "bg-green-500 border-purple-600 text-white";
+              colorClass = "bg-green-500 border-[#800080] border-3 text-white";
               break;
           }
         }
@@ -66,7 +66,7 @@ const QuestionGrid: React.FC<QuestionGridProps> = ({
           <button
             key={q?.question_id || i}
             onClick={() => onSelect && onSelect(i)}
-            className={`w-8 h-8 rounded-md text-xs font-semibold border cursor-pointer flex items-center justify-center transition-all duration-200 ${colorClass} ${activeClass} hover:scale-105`}
+            className={`w-9 h-9 rounded text-xs font-semibold border cursor-pointer flex items-center justify-center transition-all duration-200 ${colorClass} ${activeClass} hover:scale-105`}
           >
             {i + 1}
           </button>

@@ -58,26 +58,31 @@ export function LoginForm2() {
       toast.dismiss(loadingToast);
       if (res.data.success) {
         toast.success(res.data.message || "OTP verified successfully!");
-      
-        
+
         if (res.data.login) {
           sessionStorage.setItem("access_token", res.data.access_token);
           sessionStorage.setItem("refresh_token", res.data.refresh_token);
-           router.push(`/auth/addDetails?mobile=${formattedMobile}`);
+          router.push(`/auth/addDetails?mobile=${formattedMobile}`);
         } else {
           sessionStorage.setItem("mobile", formattedMobile);
-         
         }
       } else {
         toast.error(res.data.message || "Invalid OTP. Please try again.");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast.dismiss();
-      console.error(error);
-      toast.error(
-        error?.response?.data?.message ||
-          "Something went wrong. Please try again."
-      );
+
+      // Use a type guard to check if it's an AxiosError
+      if (error instanceof Error) {
+        console.error("OTP Error:", error.message);
+      }
+
+      // If you're using Axios, safely check for response data:
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message || "Something went wrong. Please try again.";
+
+      toast.error(message);
     }
   };
 
@@ -100,16 +105,20 @@ export function LoginForm2() {
 
       if (res.data.success) {
         toast.success(res.data.message || "OTP resent successfully!");
-       
+
         startCooldown(); // prevent multiple requests
       } else {
         toast.error(res.data.message || "Failed to resend OTP.");
       }
-    } catch (err: any) {
-      console.error(err);
-      toast.error(
-        err?.response?.data?.message || "Something went wrong. Try again."
-      );
+    } catch (error: unknown) {
+      toast.dismiss();
+
+      // If you're using Axios, safely check for response data:
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message || "Something went wrong. Try again.";
+
+      toast.error(message);
     } finally {
       setResendLoading(false);
     }

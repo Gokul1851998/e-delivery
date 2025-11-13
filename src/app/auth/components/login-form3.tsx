@@ -81,8 +81,6 @@ export function LoginForm3() {
       const res = await api.post("/auth/create-profile", formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      console.log(res);
-
       toast.dismiss(loadingToast);
 
       if (res.data.success) {
@@ -93,14 +91,15 @@ export function LoginForm3() {
       } else {
         toast.error(res.data.message || "Profile creation failed.");
       }
-    } catch (error: any) {
-      toast.dismiss();
-      console.error(error);
-      toast.error(
-        error?.response?.data?.message ||
-          "Something went wrong. Please try again."
-      );
-    }
+    } catch (error: unknown) {
+  toast.dismiss();
+  // If you're using Axios, safely check for response data:
+  const message =
+    (error as { response?: { data?: { message?: string } } })?.response?.data
+      ?.message || "Something went wrong. Please try again.";
+
+  toast.error(message);
+}
   };
 
   return (

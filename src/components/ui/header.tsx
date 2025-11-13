@@ -36,7 +36,7 @@ const Header: React.FC = () => {
     } catch (error) {
       toast.dismiss();
       console.error("Logout Error:", error);
-      toast.error(error?.response?.data?.message || "Something went wrong!");
+      toast.error("Something went wrong!");
       // Still ensure tokens are cleared
       sessionStorage.clear();
       router.push("/auth/login");

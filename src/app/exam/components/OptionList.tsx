@@ -13,7 +13,11 @@ interface Props {
   onSelect: (optionId: number, is_correct: boolean) => void;
 }
 
-const OptionList: React.FC<Props> = ({ options, selectedOptionId, onSelect }) => {
+const OptionList: React.FC<Props> = ({
+  options,
+  selectedOptionId,
+  onSelect,
+}) => {
   return (
     <div className="space-y-2 pt-3">
       <p className="font-semibold text-xs text-gray-700">Choose the answer :</p>
@@ -36,7 +40,7 @@ const OptionList: React.FC<Props> = ({ options, selectedOptionId, onSelect }) =>
             type="radio"
             checked={selectedOptionId === opt.id}
             readOnly
-            className="w-4 h-4 accent-sky-600"
+            className="w-4 h-4 accent-sky-600 cursor-pointer"
           />
         </div>
       ))}

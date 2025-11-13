@@ -16,6 +16,7 @@ interface SelectedOption {
 }
 
 interface Props {
+  question_id: number;
   questionNumber: number;
   questionText: string;
   comprehension?: string | null;
@@ -23,13 +24,13 @@ interface Props {
   options: Option[];
   selectedOptions: SelectedOption[];
   setSelectedOptions: React.Dispatch<React.SetStateAction<SelectedOption[]>>;
-  question_id: number;
 }
 
 const QuestionPanel: React.FC<Props> = ({
   question_id,
   questionNumber,
   questionText,
+  comprehension,
   imageUrl,
   options,
   selectedOptions,
@@ -40,7 +41,7 @@ const QuestionPanel: React.FC<Props> = ({
       // remove any previous answer for this question
       const filtered = prev.filter((item) => item.question_id !== question_id);
       // add new selected option
-      return [...filtered, { question_id, id: optionId, is_correct, type:1 }];
+      return [...filtered, { question_id, id: optionId, is_correct, type: 1 }];
     });
   };
 
@@ -52,7 +53,7 @@ const QuestionPanel: React.FC<Props> = ({
   return (
     <>
       <div className="bg-white rounded-md shadow-sm border p-3">
-        <Comprehensive />
+        <Comprehensive comprehension={comprehension} />
         <p className="text-gray-800 mb-3 mt-2 font-medium">
           {questionNumber}. {questionText}
         </p>

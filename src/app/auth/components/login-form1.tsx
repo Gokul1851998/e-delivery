@@ -31,41 +31,43 @@ export function LoginForm() {
     },
   });
 
-const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-  try {
-    // Show a small toast while processing
-    toast.loading("Sending OTP...");
+  const onSubmit = async (data: z.infer<typeof FormSchema>) => {
+    try {
+      // Show a small toast while processing
+      toast.loading("Sending OTP...");
 
-    // Prepare form data
-    const formData = new FormData();
-    formData.append("mobile", data.phone);
+      // Prepare form data
+      const formData = new FormData();
+      formData.append("mobile", data.phone);
 
-    // Send API request
-    const res = await api.post("/auth/send-otp", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+      // Send API request
+      const res = await api.post("/auth/send-otp", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
-    // Close the loading toast
-    toast.dismiss();
+      // Close the loading toast
+      toast.dismiss();
 
-    // Handle response
-    if (res?.data?.success) {
-      toast.success(res.data.message || "OTP sent successfully ✅");
+      // Handle response
+      if (res?.data?.success) {
+        toast.success(res.data.message || "OTP sent successfully ✅");
 
-      // Navigate to OTP page and pass mobile in URL
-      router.push(`/auth/otp?mobile=${data.phone}`);
-    } else {
-      toast.error(res?.data?.message || "Failed to send OTP ❌");
+        // Navigate to OTP page and pass mobile in URL
+        router.push(`/auth/otp?mobile=${data.phone}`);
+      } else {
+        toast.error(res?.data?.message || "Failed to send OTP ❌");
+      }
+    } catch (error: unknown) {
+      toast.dismiss();
+
+      // If you're using Axios, safely check for response data:
+      const message =
+        (error as { response?: { data?: { message?: string } } })?.response
+          ?.data?.message || "Something went wrong while sending OTP";
+
+      toast.error(message);
     }
-  } catch (error: any) {
-    toast.dismiss();
-    toast.error(
-      error?.response?.data?.message || "Something went wrong while sending OTP"
-    );
-    console.error("OTP Error:", error);
-  }
-};
-
+  };
 
   return (
     <Form {...form}>
@@ -120,3 +122,4 @@ const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     </Form>
   );
 }
+export default LoginForm;
