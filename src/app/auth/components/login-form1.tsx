@@ -96,6 +96,8 @@ export function LoginForm() {
                     id="phone"
                     className="bg-gray-50 dark:bg-gray-900 border-gray-300 focus:border-primary"
                     type="tel"
+                    inputMode="tel"
+                    autoFocus
                     placeholder="+91 1234 567891"
                     autoComplete="off"
                     {...field}
@@ -115,8 +117,13 @@ export function LoginForm() {
         </p>
         {/* Bottom section with Terms & Button */}
 
-        <Button className="w-full py-5 text-base pt-auto" type="submit">
-          Get Started
+        <Button
+          className="w-full py-5 text-base pt-auto"
+          type="submit"
+          disabled={form.formState.isSubmitting}
+          aria-busy={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? "Sending…" : "Get Started"}
         </Button>
       </form>
     </Form>

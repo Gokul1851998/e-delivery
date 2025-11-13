@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import background from "../../../../public/background.png";
 import LoginCard from "../components/login-card";
 import { LoginForm3 } from "../components/login-form3";

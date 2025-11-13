@@ -7,14 +7,15 @@ interface ModalProps {
   content: string;
   isOpen: boolean;
   onClose: () => void;
+  id?: string;
 }
 
-const ComprehensiveModal: React.FC<ModalProps> = ({ title, content, isOpen, onClose }) => {
+const ComprehensiveModal: React.FC<ModalProps> = ({ title, content, isOpen, onClose, id }) => {
   if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-3 sm:px-0">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl sm:max-w-3xl max-h-[80vh] overflow-y-auto">
+      <div id={id} className="bg-white rounded-lg shadow-xl w-full max-w-2xl sm:max-w-3xl max-h-[80vh] overflow-y-auto">
         {/* Header */}
         <div className="flex justify-between items-center px-5 py-3 border-b">
           <h2 className="text-md text-gray-800">{title}</h2>

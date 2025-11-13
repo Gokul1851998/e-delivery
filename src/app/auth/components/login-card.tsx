@@ -1,4 +1,5 @@
 import React from 'react'
+import Image from 'next/image'
 import loginIcon1 from "../../../../public/Iogin icon 1.png";
 import loginIcon2 from "../../../../public/login icon 2.png";
 
@@ -7,10 +8,13 @@ export default function LoginCard() {
        <div className="hidden w-1/2 bg-[#1e293b] p-10 text-white lg:flex flex-col justify-center items-center space-y-6">
           <div className="flex items-center space-x-3">
             <div className="rounded-md">
-              <img
-                src={loginIcon1.src}
+              <Image
+                src={loginIcon1}
                 alt="Logo"
-                className="h-30 w-30 object-contain"
+                width={120}
+                height={120}
+                className="object-contain"
+                priority
               />
             </div>
             <div>
@@ -20,10 +24,13 @@ export default function LoginCard() {
           </div>
 
           {/* Illustration */}
-          <img
-            src={loginIcon2.src}
+          <Image
+            src={loginIcon2}
             alt="Login Illustration"
-            className="w-72 object-contain"
+            width={288}
+            height={180}
+            className="object-contain"
+            priority
           />
         </div>
   )

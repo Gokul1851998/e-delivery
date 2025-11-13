@@ -1,19 +1,29 @@
 "use client";
 import React, { useMemo } from "react";
 import { CheckCircle, XCircle, ClipboardList, FileMinus } from "lucide-react";
-import { redirect, useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 const ResultSummary= () => {
-      const params = useSearchParams();
-  const total = params.get("total");
-  const correct = params.get("correct");
-  const incorrect = params.get("incorrect");
-  const notAttended = params.get("notAttended");
+  const params = useSearchParams();
+  const router = useRouter();
 
-    const marksObtained = useMemo(() => {
-    const marks = Number(correct) - Number(incorrect) * 0.25;
-    return marks < 0 ? 0 : marks; // prevent negative marks
-  }, [correct, incorrect]);
+  // read query params and provide safe numeric fallbacks
+  const totalParam = params.get("total");
+  const correctParam = params.get("correct");
+  const incorrectParam = params.get("incorrect");
+  const notAttendedParam = params.get("notAttended");
+
+  const totalNum = Number(totalParam) || 0;
+  const correctNum = Number(correctParam) || 0;
+  const incorrectNum = Number(incorrectParam) || 0;
+  const notAttendedNum = Number(notAttendedParam) || 0;
+
+  const marksObtained = useMemo(() => {
+    const marks = correctNum - incorrectNum * 0.25;
+    // round to 2 decimal places and prevent negative
+    const rounded = Math.round((Math.max(0, marks) + Number.EPSILON) * 100) / 100;
+    return rounded;
+  }, [correctNum, incorrectNum]);
 
   return (
     <div className="min-h-[calc(100vh-5rem)] flex items-center justify-center bg-[#edf3f5]">
@@ -22,7 +32,7 @@ const ResultSummary= () => {
         <div className="bg-gradient-to-r from-[#0d6784] to-[#112b3c] text-white rounded-xl p-6">
           <p className="text-sm mb-1">Marks Obtained:</p>
           <h1 className="text-4xl font-bold">
-            {marksObtained} / {total}
+            {marksObtained} / {totalNum}
           </h1>
         </div>
 
@@ -33,7 +43,7 @@ const ResultSummary= () => {
               <ClipboardList className="text-yellow-500" size={18} />
               <span>Total Questions:</span>
             </div>
-            <span className="font-semibold">{total}</span>
+            <span className="font-semibold">{totalNum}</span>
           </div>
 
           <div className="flex justify-between items-center text-gray-800">
@@ -41,9 +51,7 @@ const ResultSummary= () => {
               <CheckCircle className="text-green-500" size={18} />
               <span>Correct Answers:</span>
             </div>
-            <span className="font-semibold">
-                {correct}
-            </span>
+      <span className="font-semibold">{correctNum}</span>
           </div>
 
           <div className="flex justify-between items-center text-gray-800">
@@ -51,9 +59,7 @@ const ResultSummary= () => {
               <XCircle className="text-red-500" size={18} />
               <span>Incorrect Answers:</span>
             </div>
-            <span className="font-semibold">
-              {incorrect}
-            </span>
+            <span className="font-semibold">{incorrectNum}</span>
           </div>
 
           <div className="flex justify-between items-center text-gray-800">
@@ -61,15 +67,13 @@ const ResultSummary= () => {
               <FileMinus className="text-gray-600" size={18} />
               <span>Not Attended Questions:</span>
             </div>
-            <span className="font-semibold">
-              {notAttended}
-            </span>
+            <span className="font-semibold">{notAttendedNum}</span>
           </div>
         </div>
 
         {/* Done Button */}
         <button
-         onClick={() => redirect('/auth/login')}
+          onClick={() => router.push("/auth/login")}
           className="w-full bg-[#1c2b36] text-white py-2 rounded-md hover:bg-[#2b3b48] transition"
         >
           Done

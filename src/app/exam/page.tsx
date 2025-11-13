@@ -36,12 +36,7 @@ interface QuestionListResponse {
   questions: Question[];
 }
 
-interface SelectedOption {
-  question_id: number;
-  id: number;
-  is_correct: boolean;
-  type: number; 
-}
+import type { SelectedOption } from "@/lib/types";
 
 // ---------- Custom Hook: Fetch Questions ----------
 const useQuestionList = () => {
@@ -92,6 +87,11 @@ const QuestionList: React.FC = () => {
     seconds: 0,
   });
 
+  // prevent duplicate auto-submit when timer reaches 0
+  const submittedRef = React.useRef(false);
+  // track whether timer was initialized with a non-zero total (prevent immediate 00:00 actions)
+  const initialTotalSecondsRef = React.useRef<number | null>(null);
+
   // Handle timer updates
   const handleTimeUp = React.useCallback(
     (time: { minutes: number; seconds: number }) => {
@@ -99,6 +99,55 @@ const QuestionList: React.FC = () => {
     },
     []
   );
+
+  const handleSubmit = React.useCallback(async () => {
+    const correctAnswers = selectedOptions.filter(
+      (i) => i.is_correct === true
+    ).length;
+    const incorrectAnswers = selectedOptions.filter(
+      (i) => i.is_correct === false
+    ).length;
+    const notAttended =
+      data!.questions.length - (correctAnswers + incorrectAnswers);
+    router.push(
+      `/result?total=${data?.questions?.length}&correct=${correctAnswers}&incorrect=${incorrectAnswers}&notAttended=${notAttended}`
+    );
+  }, [selectedOptions, data, router]);
+
+  // initialize remaining time when data loads
+  React.useEffect(() => {
+    if (data) {
+      setRemainingTime({ minutes: data.total_time, seconds: 0 });
+      if (typeof data.total_time === "number" && data.total_time > 0) {
+        initialTotalSecondsRef.current = data.total_time * 60;
+      }
+    }
+  }, [data]);
+
+  // auto-submit when timer reaches 00:00
+  React.useEffect(() => {
+    if (
+      remainingTime.minutes === 0 &&
+      remainingTime.seconds === 0 &&
+      data &&
+      !submittedRef.current &&
+      // only act if we had a non-zero initial timer (prevents immediate action on mount)
+      initialTotalSecondsRef.current &&
+      initialTotalSecondsRef.current > 0
+    ) {
+      // If not the last question, move to the next question instead of submitting the whole test
+      const lastIndex = data.questions.length - 1;
+      if (current < lastIndex) {
+        // silently advance to next question when time for this question expires
+       
+        // do not mark as submitted; allow behavior to continue
+      } else {
+        // If it's the last question, open the submit confirmation modal
+        // (don't auto-submit) so the user can review before finalizing.
+        setModalOpen(true);
+      }
+    }
+  }, [remainingTime, data, handleSubmit, current]);
 
   // Handle navigation and marking logic
   const handleButtonClick = (type: number) => {
@@ -159,19 +208,7 @@ const QuestionList: React.FC = () => {
     }
   };
 
-  const handleSubmit = async () => {
-    const correctAnswers = selectedOptions.filter(
-      (i) => i.is_correct === true
-    ).length;
-    const incorrectAnswers = selectedOptions.filter(
-      (i) => i.is_correct === false
-    ).length;
-    const notAttended =
-      data!.questions.length - (correctAnswers + incorrectAnswers);
-    router.push(
-      `/result?total=${data?.questions?.length}&correct=${correctAnswers}&incorrect=${incorrectAnswers}&notAttended=${notAttended}`
-    );
-  };
+  
 
   if (loading)
     return (
@@ -206,11 +243,11 @@ const QuestionList: React.FC = () => {
             imageUrl={currentQuestion.image}
             options={currentQuestion.options}
             selectedOptions={selectedOptions}
-            setSelectedOptions={(options) => setSelectedOptions(options)}
+            setSelectedOptions={setSelectedOptions}
           />
         </div>
 
-        <ButtonList current={current} handleButtonClick={handleButtonClick} />
+  <ButtonList current={current} total={data.questions.length} handleButtonClick={handleButtonClick} />
       </div>
 
       {/* Right Section */}

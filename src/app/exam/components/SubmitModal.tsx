@@ -21,25 +21,43 @@ const SubmitModal: React.FC<SubmitModalProps> = ({
   onSubmit,
   stats,
 }) => {
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && stats.remainingTime !== "00:00") {
+        onClose();
+      }
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isOpen, onClose, stats.remainingTime]);
+
   if (!isOpen) return null;
 
   return (
     // Dark overlay background
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 px-3 sm:px-0">
       {/* Modal Box */}
-      <div className="bg-white rounded-lg shadow-lg max-w-sm">
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="submit-modal-title"
+        className="bg-white rounded-lg shadow-lg max-w-sm"
+      >
         {/* Header */}
         <div className="flex justify-between items-center border-b px-5 py-3">
           <h2 className="text-sm font-semibold text-gray-800">
             Are you sure you want to submit the test?
           </h2>
           {stats.remainingTime !== "00:00" && (
-               <button
-            onClick={onClose}
-            className="text-gray-500 cursor-pointer hover:text-gray-700 text-lg pl-2"
-          >
-            ×
-          </button>
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Close dialog"
+              className="text-gray-500 cursor-pointer hover:text-gray-700 text-lg pl-2"
+            >
+              ×
+            </button>
           )}
        
         </div>
@@ -92,9 +110,11 @@ const SubmitModal: React.FC<SubmitModalProps> = ({
         </div>
 
         {/* Footer */}
-         <div className="border-t px-5 py-3">
+        <div className="border-t px-5 py-3">
           <button
+            type="button"
             onClick={onSubmit}
+            aria-label="Submit Test"
             className="bg-slate-800 cursor-pointer hover:bg-slate-700 text-white text-sm w-full py-3 rounded-md transition-all"
           >
             Submit Test

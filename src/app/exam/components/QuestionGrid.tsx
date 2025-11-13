@@ -1,12 +1,7 @@
 "use client";
 import React from "react";
 
-interface SelectedOption {
-  question_id: number;
-  id: number;
-  is_correct: boolean;
-  type: number; // 1, 2, 3, 4
-}
+import type { SelectedOption } from "@/lib/types";
 
 interface Question {
   question_id: number;
@@ -30,7 +25,9 @@ const QuestionGrid: React.FC<QuestionGridProps> = ({
   selectedOptions,
   current,
   onSelect,
-}) => {
+}) => {  
+  // ensure a sensible default active index (first question) when current is undefined
+  const activeIndex = typeof current === "number" ? current : 0;
   return (
     <div className="grid grid-cols-5 sm:grid-cols-10 gap-2">
       {Array.from({ length: total }, (_, i) => {
@@ -59,8 +56,7 @@ const QuestionGrid: React.FC<QuestionGridProps> = ({
         }
 
         // Highlight current question
-        const activeClass =
-          current === i ? "ring-2 ring-sky-500 ring-offset-1" : "";
+        const activeClass = activeIndex === i ? "ring-2 ring-sky-500 ring-offset-1" : "";
 
         return (
           <button

@@ -1,18 +1,14 @@
 import React from "react";
+import Image from "next/image";
 import OptionList from "./OptionList";
 import Comprehensive from "./Comprehensive";
+import type { SelectedOption } from "@/lib/types";
 
 interface Option {
   id: number;
   option: string;
   image: string | null;
   is_correct: boolean; // ✅ add this if you want to track correctness
-}
-
-interface SelectedOption {
-  question_id: number;
-  id: number;
-  is_correct: boolean;
 }
 
 interface Props {
@@ -59,11 +55,16 @@ const QuestionPanel: React.FC<Props> = ({
         </p>
 
         {imageUrl && (
-          <img
-            src={imageUrl}
-            alt="question"
-            className="rounded-md mb-4 max-h-48 object-contain"
-          />
+          <div className="rounded-md mb-4 max-h-48 overflow-hidden">
+            <Image
+              src={imageUrl}
+              alt="question"
+              width={800}
+              height={300}
+              className="object-contain w-full h-auto"
+              unoptimized
+            />
+          </div>
         )}
       </div>
 

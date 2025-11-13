@@ -4,8 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
-import { useState } from "react";
-import Link from "next/link";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import api from "@/lib/axios";
 
@@ -21,7 +20,9 @@ import {
 import { Input } from "@/components/ui/input";
 
 const FormSchema = z.object({
-  code: z.string().min(6, { message: "Please enter a valid 6-digit code." }),
+  code: z
+    .string()
+    .regex(/^\d{6}$/, { message: "Please enter a valid 6-digit code." }),
 });
 
 export function LoginForm2() {
@@ -30,6 +31,7 @@ export function LoginForm2() {
   const mobile = searchParams.get("mobile") || "";
   const [resendLoading, setResendLoading] = useState(false);
   const [cooldown, setCooldown] = useState(0);
+  const intervalRef = useRef<number | null>(null);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -127,16 +129,33 @@ export function LoginForm2() {
   // ⏱ 30-second cooldown for Resend button
   const startCooldown = () => {
     setCooldown(30);
-    const interval = setInterval(() => {
+    // clear any existing interval
+    if (intervalRef.current) {
+      clearInterval(intervalRef.current);
+    }
+    intervalRef.current = window.setInterval(() => {
       setCooldown((prev) => {
         if (prev <= 1) {
-          clearInterval(interval);
+          if (intervalRef.current) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+          }
           return 0;
         }
         return prev - 1;
       });
     }, 1000);
   };
+
+  // cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    };
+  }, []);
 
   return (
     <Form {...form}>
@@ -166,9 +185,18 @@ export function LoginForm2() {
                     id="code"
                     className="bg-gray-50 dark:bg-gray-900 border-gray-300 focus:border-primary"
                     type="text"
+                    inputMode="numeric"
+                    pattern="\d{6}"
+                    maxLength={6}
                     placeholder="Enter the 6-digit code"
-                    autoComplete="off"
+                    autoComplete="one-time-code"
+                    autoFocus
                     {...field}
+                    onChange={(e) => {
+                      // allow only digits
+                      const v = e.target.value.replace(/\D/g, "").slice(0, 6);
+                      field.onChange(v);
+                    }}
                   />
                 </FormControl>
                 <FormMessage />
@@ -198,8 +226,12 @@ export function LoginForm2() {
           </button>
         </div>
 
-        <Button className="w-full py-5 text-base pt-auto" type="submit">
-          Get Started
+        <Button
+          className="w-full py-5 text-base pt-auto"
+          type="submit"
+          disabled={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? "Verifying..." : "Get Started"}
         </Button>
       </form>
     </Form>

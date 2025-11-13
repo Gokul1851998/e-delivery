@@ -7,20 +7,25 @@ interface TimerProps {
 }
 
 const Timer: React.FC<TimerProps> = ({ totalTime, handleTimeUp }) => {
-  const [secondsLeft, setSecondsLeft] = useState(totalTime * 60);
+  // Coerce totalTime to a safe integer (minutes)
+  const minutesTotal = Number.isFinite(totalTime) ? Math.max(0, Math.floor(totalTime)) : 0;
+
+  const [secondsLeft, setSecondsLeft] = useState(() => minutesTotal * 60);
 
   // Run countdown
   useEffect(() => {
-    const timer = setInterval(() => {
-      setSecondsLeft((prev) => {
-        const newTime = prev > 0 ? prev - 1 : 0;
-        if (newTime === 0) clearInterval(timer);
-        return newTime;
-      });
+    // Reset seconds when totalTime changes
+    setSecondsLeft(minutesTotal * 60);
+
+    // if no time, don't start the interval
+    if (minutesTotal <= 0) return;
+
+    const id = setInterval(() => {
+      setSecondsLeft((prev) => (prev > 0 ? prev - 1 : 0));
     }, 1000);
 
-    return () => clearInterval(timer);
-  }, [totalTime]);
+    return () => clearInterval(id);
+  }, [minutesTotal]);
 
   // Notify parent whenever time updates (AFTER render)
   useEffect(() => {

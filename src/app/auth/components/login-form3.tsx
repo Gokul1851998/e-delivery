@@ -5,7 +5,7 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 import Image from "next/image";
-import { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -31,6 +31,7 @@ const FormSchema = z.object({
 
 export function LoginForm3() {
   const [preview, setPreview] = useState<string | null>(null);
+  const previewRef = useRef<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const mobile = searchParams.get("mobile") || "";
@@ -49,16 +50,36 @@ export function LoginForm3() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      setPreview(URL.createObjectURL(file));
+      // revoke previous preview if present
+      if (previewRef.current) {
+        URL.revokeObjectURL(previewRef.current);
+      }
+      const url = URL.createObjectURL(file);
+      previewRef.current = url;
+      setPreview(url);
       form.setValue("profile", file);
     }
   };
 
   // ✅ Remove uploaded image
   const handleRemoveImage = () => {
+    if (previewRef.current) {
+      URL.revokeObjectURL(previewRef.current);
+      previewRef.current = null;
+    }
     setPreview(null);
-    form.setValue("profile", undefined);
+    form.setValue("profile", null);
   };
+
+  // cleanup created object URL on unmount
+  useEffect(() => {
+    return () => {
+      if (previewRef.current) {
+        URL.revokeObjectURL(previewRef.current);
+        previewRef.current = null;
+      }
+    };
+  }, []);
 
   // ✅ Handle submit
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
@@ -128,6 +149,7 @@ export function LoginForm3() {
                   width={128}
                   height={128}
                   className="object-cover w-full h-full rounded-lg"
+                  unoptimized
                 />
               ) : (
                 <div className="text-center text-gray-500 text-xs flex flex-col items-center">
@@ -235,8 +257,12 @@ export function LoginForm3() {
         </div>
 
         {/* Submit */}
-        <Button className="w-full py-5 text-base" type="submit">
-          Get Started
+        <Button
+          className="w-full py-5 text-base"
+          type="submit"
+          disabled={form.formState.isSubmitting}
+        >
+          {form.formState.isSubmitting ? "Creating..." : "Get Started"}
         </Button>
       </form>
     </Form>

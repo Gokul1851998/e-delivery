@@ -24,25 +24,39 @@ api.interceptors.response.use(
       originalRequest._retry = true;
       try {
         const refresh = getRefreshToken();
+
+        // if there's no refresh token, force logout
+        if (!refresh) {
+          clearTokens();
+          window.location.href = "/auth/login";
+          return Promise.reject(error);
+        }
+
         const res = await axios.post("https://nexlearn.noviindusdemosites.in/auth/refresh", {
           refresh_token: refresh,
         });
 
-        const { access_token, refresh_token } = res.data as {
-          access_token: string;
-          refresh_token: string;
-        };
+        // ensure we got new tokens back
+  const { access_token, refresh_token } = (res.data as { access_token?: string; refresh_token?: string }) || {};
+        if (!access_token) {
+          clearTokens();
+          window.location.href = "/auth/login";
+          return Promise.reject(error);
+        }
 
-        setTokens(access_token, refresh_token);
+  // access_token is guaranteed here (checked above); coerce types for the setter
+  setTokens(access_token as string, (refresh_token as string) || "");
 
-        // ✅ Fix: reattach the new token before retry
+        // reattach the new token before retry
         originalRequest.headers = originalRequest.headers || {};
         originalRequest.headers.Authorization = `Bearer ${access_token}`;
 
         return api(originalRequest);
-      } catch (err) {
+      } catch (refreshErr) {
+        // refresh failed — clear tokens and redirect to login
         clearTokens();
-        window.location.href = "/login";
+        window.location.href = "/auth/login";
+        return Promise.reject(refreshErr);
       }
     }
 
